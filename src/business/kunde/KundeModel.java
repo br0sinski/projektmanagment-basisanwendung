@@ -108,7 +108,7 @@ public final class KundeModel {
 	
 	public Kunde ladeLetztenKundenZuHaus(int hausnr) throws SQLException {
 	    final String sql =
-	        "SELECT Haus_Hausnr, Vorname, Nachname, Telefon, email " +
+	        "SELECT idKunde, Haus_Hausnr, Vorname, Nachname, Telefon, email " +
 	        "FROM Kunde WHERE Haus_Hausnr = ? " +
 	        "ORDER BY idKunde DESC LIMIT 1";
 
@@ -118,6 +118,9 @@ public final class KundeModel {
 	        try (ResultSet rs = ps.executeQuery()) {
 	            if (!rs.next()) return null;
 	            Kunde k = new Kunde();
+	            
+	            k.setIdKunde(rs.getInt("idKunde"));
+	            
 	            k.setHausnummer(rs.getInt("Haus_Hausnr"));
 	            k.setVorname(rs.getString("Vorname"));
 	            k.setNachname(rs.getString("Nachname"));
@@ -127,4 +130,21 @@ public final class KundeModel {
 	        }
 	    }
 	}
+	
+	
+	 public boolean hatDachgeschoss(int hausnr) throws SQLException {
+	        final String sql =
+	            "SELECT Haustyp_idHaustyp FROM Haus WHERE Hausnr = ?";
+
+	        try (Connection con = DbConnector.getConnection();
+	             PreparedStatement ps = con.prepareStatement(sql)) {
+	            ps.setInt(1, hausnr);
+	            try (ResultSet rs = ps.executeQuery()) {
+	                if (!rs.next()) return false;
+	                int typ = rs.getInt(1);
+	                return typ == 1; // 1 = Haus mit Dachgeschoss
+	            }
+	        }
+	    }
+	
 }

@@ -1,13 +1,25 @@
 package business.kunde;
 
 public class Kunde {
-	
+
+	private int idKunde;
+
 	private int hausnummer;
 	private String vorname;
 	private String nachname;
 	private String telefonnummer;
 	private String email;
-		  
+
+	
+	public int getIdKunde() {
+		return idKunde;
+	}
+
+	public void setIdKunde(int idKunde) {
+		this.idKunde = idKunde;
+	}
+
+	
 	public int getHausnummer() {
 		return hausnummer;
 	}
@@ -23,15 +35,15 @@ public class Kunde {
 	public void setVorname(String vorname) {
 		this.vorname = vorname;
 	}
-	
+
 	public String getNachname() {
 		return nachname;
 	}
-	
+
 	public void setNachname(String nachname) {
 		this.nachname = nachname;
 	}
-	
+
 	public String getTelefonnummer() {
 		return telefonnummer;
 	}
@@ -47,5 +59,5 @@ public class Kunde {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	
+
 }

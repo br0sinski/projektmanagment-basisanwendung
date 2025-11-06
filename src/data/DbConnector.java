@@ -6,10 +6,10 @@ import java.sql.SQLException;
 
 public final class DbConnector {
 
-    // stumpf aus deiner Angabe
+	//stumpf aus deiner Angabe
     private static final String HOST = "sr-labor.ddns.net";
     private static final String PORT = "3306";
-    private static final String DB   = "PM_DB";
+    private static final String DB   = "PM_Gruppe_A";
     private static final String USER = "PM_Gruppe_A";
     private static final String PWD  = "123456789";
 

@@ -26,15 +26,33 @@ public class KundeView {
 	private Label lblKunde = new Label("Kunde");
 	private Label lblNummerHaus = new Label("Plannummer des Hauses");
 	private ComboBox<Integer> cmbBxNummerHaus = new ComboBox<Integer>();
-	private Label lblVorname = new Label("Vorname");
-	private TextField txtVorname = new TextField();
-	private Button btnAnlegen = new Button("Anlegen");
-	private Button btnAendern = new Button("ändern");
-	private Button btnLoeschen = new Button("Löschen");
-	private MenuBar mnBar = new MenuBar();
-	private Menu mnSonderwuensche = new Menu("Sonderwünsche");
-	private MenuItem mnItmGrundriss = new MenuItem("Grundrissvarianten");
-	// -------Ende Attribute der grafischen Oberflaeche-------
+	
+	private Label lblDGTitle = new Label("Dachgeschoss:");
+    private Label lblDGValue = new Label("-");
+    
+    private Label lblKundennummer = new Label("Kundennummer");
+    private TextField txtKundennummer = new TextField();
+	
+    private Label lblVorname = new Label("Vorname");
+    private TextField txtVorname = new TextField();
+
+    private Label lblNachname = new Label("Nachname");
+    private TextField txtNachname = new TextField();
+
+    private Label lblTelefon = new Label("Telefon");
+    private TextField txtTelefon = new TextField();
+
+    private Label lblEmail = new Label("E-Mail");
+    private TextField txtEmail = new TextField();
+
+    private Button btnAnlegen = new Button("Anlegen");
+    private Button btnAendern = new Button("ändern");
+    private Button btnLoeschen = new Button("Löschen");
+
+    private MenuBar mnBar = new MenuBar();
+    private Menu mnSonderwuensche = new Menu("Sonderwünsche");
+    private MenuItem mnItmGrundriss = new MenuItem("Grundrissvarianten");
+    // -------Ende Attribute der grafischen Oberflaeche-------
 
 	/**
 	 * erzeugt ein KundeView-Objekt und initialisiert die Steuerelemente der Maske
@@ -70,15 +88,35 @@ public class KundeView {
 		gridPane.add(cmbBxNummerHaus, 1, 2);
 		cmbBxNummerHaus.setMinSize(150, 25);
 		cmbBxNummerHaus.setItems(this.kundeModel.getPlannummern());
-		gridPane.add(lblVorname, 0, 3);
-		gridPane.add(txtVorname, 1, 3);
-		// Buttons
-		gridPane.add(btnAnlegen, 0, 7);
-		btnAnlegen.setMinSize(150, 25);
-		gridPane.add(btnAendern, 1, 7);
-		btnAendern.setMinSize(150, 25);
-		gridPane.add(btnLoeschen, 2, 7);
-		btnLoeschen.setMinSize(150, 25);
+		
+		gridPane.add(lblDGTitle, 2, 2);
+        gridPane.add(lblDGValue, 3, 2);
+
+      
+        gridPane.add(lblKundennummer, 0, 3);
+        gridPane.add(txtKundennummer, 1, 3);
+        txtKundennummer.setEditable(false); // idKunde ist systemvergeben
+
+        gridPane.add(lblVorname, 0, 4);
+        gridPane.add(txtVorname, 1, 4);
+
+        gridPane.add(lblNachname, 0, 5);
+        gridPane.add(txtNachname, 1, 5);
+
+        gridPane.add(lblTelefon, 0, 6);
+        gridPane.add(txtTelefon, 1, 6);
+
+        gridPane.add(lblEmail, 0, 7);
+        gridPane.add(txtEmail, 1, 7);
+
+        // Buttons
+        gridPane.add(btnAnlegen, 0, 9);
+        btnAnlegen.setMinSize(150, 25);
+        gridPane.add(btnAendern, 1, 9);
+        btnAendern.setMinSize(150, 25);
+        gridPane.add(btnLoeschen, 2, 9);
+        btnLoeschen.setMinSize(150, 25);
+        
 		// MenuBar und Menu
 		borderPane.setTop(mnBar);
 		mnBar.getMenus().add(mnSonderwuensche);
@@ -87,7 +125,7 @@ public class KundeView {
 
 	/* initialisiert die Listener zu den Steuerelementen auf de Maske */
 	private void initListener() {
-		cmbBxNummerHaus.setOnAction(aEvent -> {
+		cmbBxNummerHaus.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> {
 			holeInfoDachgeschoss();
 			leseKunden();
 		});
@@ -106,35 +144,60 @@ public class KundeView {
 	}
 
 	private void holeInfoDachgeschoss() {
+	    Integer haus = cmbBxNummerHaus.getValue();
+	    if (haus == null) { lblDGValue.setText("-"); return; }
+	    try {
+	        boolean dg = kundeModel.hatDachgeschoss(haus);
+	        lblDGValue.setText(dg ? "ja" : "nein");
+	    } catch (Exception e) {
+	        zeigeFehlermeldung("DG ermitteln fehlgeschlagen", e.getMessage());
+	        lblDGValue.setText("-");
+	    }
 	}
 
 	private void leseKunden(){
-	    Integer haus = cmbBxNummerHaus.getValue();
-	    if (haus == null) return;
-	    try {
-	        Kunde k = kundeModel.ladeLetztenKundenZuHaus(haus);
-	        if (k != null) {
-	            txtVorname.setText(k.getVorname());
-	           
-	        } else {
-	            txtVorname.clear();
-	        }
-	    } catch (Exception e) {
-	        zeigeFehlermeldung("DB-Fehler", "Kundendaten konnten nicht gelesen werden.");
-	    }
+		Integer haus = cmbBxNummerHaus.getValue();
+        if (haus == null) {
+            txtKundennummer.clear();
+            txtVorname.clear();
+            txtNachname.clear();
+            txtTelefon.clear();
+            txtEmail.clear();
+            return;
+        }
+        try {
+            Kunde k = kundeModel.ladeLetztenKundenZuHaus(haus);
+            if (k != null) {
+                txtKundennummer.setText(String.valueOf(k.getIdKunde()));
+                txtVorname.setText(k.getVorname());
+                txtNachname.setText(k.getNachname());
+                txtTelefon.setText(k.getTelefonnummer());
+                txtEmail.setText(k.getEmail());
+            } else {
+                txtKundennummer.clear();
+                txtVorname.clear();
+                txtNachname.clear();
+                txtTelefon.clear();
+                txtEmail.clear();
+            }
+        } catch (Exception e) {
+            zeigeFehlermeldung("DB-Fehler", "Kundendaten konnten nicht gelesen werden.");
+        }
 	}
 
 	private void legeKundenAn() {
 		Integer haus = cmbBxNummerHaus.getValue();
 
-		Kunde kunde = new Kunde();
-		kunde.setHausnummer(haus == null ? 0 : haus);
-		kunde.setVorname(txtVorname.getText() == null ? "" : txtVorname.getText());
-		kunde.setNachname("");
-		kunde.setTelefonnummer(null); 
-		kunde.setEmail(null); 
+        Kunde kunde = new Kunde();
+        kunde.setHausnummer(haus == null ? 0 : haus);
+        kunde.setVorname(txtVorname.getText() == null ? "" : txtVorname.getText());
+        kunde.setNachname(txtNachname.getText() == null ? "" : txtNachname.getText());
+        kunde.setTelefonnummer(txtTelefon.getText());
+        kunde.setEmail(txtEmail.getText());
 
-		kundeControl.speichereKunden(kunde);
+        kundeControl.speichereKunden(kunde);
+
+        leseKunden();
 	}
 
 	private void aendereKunden() {

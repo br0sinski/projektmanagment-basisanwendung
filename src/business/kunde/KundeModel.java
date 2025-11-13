@@ -8,143 +8,139 @@ import java.sql.Types;
 import data.DbConnector;
 
 import javafx.collections.*;
-  
-/** 
+
+/**
  * Klasse, welche das Model des Grundfensters mit den Kundendaten enthaelt.
  */
 public final class KundeModel {
-	
+
 	// enthaelt den aktuellen Kunden
 	private Kunde kunde;
-	
-	/* enthaelt die Plannummern der Haeuser, diese muessen vielleicht noch
-	   in eine andere Klasse verschoben werden */
-	ObservableList<Integer> plannummern = 
-	    FXCollections.observableArrayList(
-		0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24);
-	
+
+	/*
+	 * enthaelt die Plannummern der Haeuser, diese muessen vielleicht noch in eine
+	 * andere Klasse verschoben werden
+	 */
+	ObservableList<Integer> plannummern = FXCollections.observableArrayList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+			13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24);
 
 	// enthaelt das einzige KundeModel-Objekt
 	private static KundeModel kundeModel;
-	
+
 	// privater Konstruktor zur Realisierung des Singleton-Pattern
-	private KundeModel(){
+	private KundeModel() {
 		super();
 	}
-	
+
 	/**
-	 *  Methode zum Erhalt des einzigen KundeModel-Objekts.
-	 *  Das Singleton-Pattern wird realisiert.
-	 *  @return KundeModel, welches das einzige Objekt dieses
-	 *          Typs ist.
+	 * Methode zum Erhalt des einzigen KundeModel-Objekts. Das Singleton-Pattern
+	 * wird realisiert.
+	 * 
+	 * @return KundeModel, welches das einzige Objekt dieses Typs ist.
 	 */
-	public static KundeModel getInstance(){
-		if(kundeModel == null){
+	public static KundeModel getInstance() {
+		if (kundeModel == null) {
 			kundeModel = new KundeModel();
 		}
-		return kundeModel;	
+		return kundeModel;
 	}
-	
+
 	/**
 	 * gibt die Ueberschrift zum Grundfenster mit den Kundendaten heraus
-	 * @return String, Ueberschrift zum Grundfenster mit den Kundendaten 
+	 * 
+	 * @return String, Ueberschrift zum Grundfenster mit den Kundendaten
 	 */
-	public String getUeberschrift(){
+	public String getUeberschrift() {
 		return "Verwaltung der Sonderwunschlisten";
 	}
-	
+
 	/**
 	 * gibt saemtliche Plannummern der Haeuser des Baugebiets heraus.
+	 * 
 	 * @return ObservableList<Integer> , enthaelt saemtliche Plannummern der Haeuser
 	 */
-	public ObservableList<Integer> getPlannummern(){
-		return this.plannummern; 
+	public ObservableList<Integer> getPlannummern() {
+		return this.plannummern;
 	}
-		 	
+
 	// ---- Datenbankzugriffe -------------------
-	
+
 	/**
 	 * speichert ein Kunde-Objekt in die Datenbank
+	 * 
 	 * @param kunde, Kunde-Objekt, welches zu speichern ist
 	 * @throws SQLException, Fehler beim Speichern in die Datenbank
-	 * @throws Exception, unbekannter Fehler
+	 * @throws Exception,    unbekannter Fehler
 	 */
 	public void speichereKunden(Kunde kunde) throws SQLException, Exception {
-	    this.kunde = kunde;
+		this.kunde = kunde;
 
-	    final String sql =
-	        "INSERT INTO Kunde (Haus_Hausnr, Vorname, Nachname, Telefon, email) " +
-	        "VALUES (?,?,?,?,?)";
+		final String sql = "INSERT INTO Kunde (Haus_Hausnr, Vorname, Nachname, Telefon, email) " + "VALUES (?,?,?,?,?)";
 
-	    try (Connection con = DbConnector.getConnection();
-	         PreparedStatement ps = con.prepareStatement(sql)) {
+		try (Connection con = DbConnector.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
-	        
-	        if (kunde.getHausnummer() > 0) {
-	            ps.setInt(1, kunde.getHausnummer());
-	        } else {
-	            ps.setNull(1, Types.INTEGER);
-	        }
+			if (kunde.getHausnummer() > 0) {
+				ps.setInt(1, kunde.getHausnummer());
+			} else {
+				ps.setNull(1, Types.INTEGER);
+			}
 
-	        ps.setString(2, kunde.getVorname() == null ? "" : kunde.getVorname());
+			ps.setString(2, kunde.getVorname() == null ? "" : kunde.getVorname());
 
-	        String nn = (kunde.getNachname() == null || kunde.getNachname().isBlank())
-	                ? "" : kunde.getNachname();
-	        ps.setString(3, nn);
+			String nn = (kunde.getNachname() == null || kunde.getNachname().trim().isEmpty()) ? ""
+					: kunde.getNachname();
 
-	        if (kunde.getTelefonnummer() == null || kunde.getTelefonnummer().isBlank())
-	            ps.setNull(4, Types.VARCHAR);
-	        else
-	            ps.setString(4, kunde.getTelefonnummer());
+			ps.setString(3, nn);
 
-	        if (kunde.getEmail() == null || kunde.getEmail().isBlank())
-	            ps.setNull(5, Types.VARCHAR);
-	        else
-	            ps.setString(5, kunde.getEmail());
+			if (kunde.getTelefonnummer() == null || kunde.getTelefonnummer().trim().isEmpty())
+				ps.setNull(4, Types.VARCHAR);
+			else
+				ps.setString(4, kunde.getTelefonnummer());
 
-	        ps.executeUpdate();
-	    }
-	}  
-	
-	public Kunde ladeLetztenKundenZuHaus(int hausnr) throws SQLException {
-	    final String sql =
-	        "SELECT idKunde, Haus_Hausnr, Vorname, Nachname, Telefon, email " +
-	        "FROM Kunde WHERE Haus_Hausnr = ? " +
-	        "ORDER BY idKunde DESC LIMIT 1";
+			if (kunde.getEmail() == null || kunde.getEmail().trim().isEmpty())
+				ps.setNull(5, Types.VARCHAR);
+			else
+				ps.setString(5, kunde.getEmail());
 
-	    try (Connection con = DbConnector.getConnection();
-	         PreparedStatement ps = con.prepareStatement(sql)) {
-	        ps.setInt(1, hausnr);
-	        try (ResultSet rs = ps.executeQuery()) {
-	            if (!rs.next()) return null;
-	            Kunde k = new Kunde();
-	            
-	            k.setIdKunde(rs.getInt("idKunde"));
-	            
-	            k.setHausnummer(rs.getInt("Haus_Hausnr"));
-	            k.setVorname(rs.getString("Vorname"));
-	            k.setNachname(rs.getString("Nachname"));
-	            k.setTelefonnummer(rs.getString("Telefon"));
-	            k.setEmail(rs.getString("email"));
-	            return k;
-	        }
-	    }
+			ps.executeUpdate();
+		}
 	}
-	
-	
-	 public boolean hatDachgeschoss(int hausnr) throws SQLException {
-	        final String sql =
-	            "SELECT Haustyp_idHaustyp FROM Haus WHERE Hausnr = ?";
 
-	        try (Connection con = DbConnector.getConnection();
-	             PreparedStatement ps = con.prepareStatement(sql)) {
-	            ps.setInt(1, hausnr);
-	            try (ResultSet rs = ps.executeQuery()) {
-	                if (!rs.next()) return false;
-	                int typ = rs.getInt(1);
-	                return typ == 1; // 1 = Haus mit Dachgeschoss
-	            }
-	        }
-	    }
-	
+	public Kunde ladeLetztenKundenZuHaus(int hausnr) throws SQLException {
+		final String sql = "SELECT idKunde, Haus_Hausnr, Vorname, Nachname, Telefon, email "
+				+ "FROM Kunde WHERE Haus_Hausnr = ? " + "ORDER BY idKunde DESC LIMIT 1";
+
+		try (Connection con = DbConnector.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+			ps.setInt(1, hausnr);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (!rs.next())
+					return null;
+				Kunde k = new Kunde();
+
+				k.setIdKunde(rs.getInt("idKunde"));
+
+				k.setHausnummer(rs.getInt("Haus_Hausnr"));
+				k.setVorname(rs.getString("Vorname"));
+				k.setNachname(rs.getString("Nachname"));
+				k.setTelefonnummer(rs.getString("Telefon"));
+				k.setEmail(rs.getString("email"));
+				return k;
+			}
+		}
+	}
+
+	public boolean hatDachgeschoss(int hausnr) throws SQLException {
+		final String sql = "SELECT Haustyp_idHaustyp FROM Haus WHERE Hausnr = ?";
+
+		try (Connection con = DbConnector.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+			ps.setInt(1, hausnr);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (!rs.next())
+					return false;
+				int typ = rs.getInt(1);
+				return typ == 1; // 1 = Haus mit Dachgeschoss
+			}
+		}
+	}
+
 }

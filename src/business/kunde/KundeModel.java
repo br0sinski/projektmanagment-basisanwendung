@@ -1,6 +1,12 @@
 package business.kunde;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import data.DbConnector;
+
 import javafx.collections.*;
   
 /** 
@@ -63,9 +69,62 @@ public final class KundeModel {
 	 * @throws SQLException, Fehler beim Speichern in die Datenbank
 	 * @throws Exception, unbekannter Fehler
 	 */
-	public void speichereKunden(Kunde kunde)
-	    throws SQLException, Exception{
-        // Speicherung des Kunden in der DB
-   	    this.kunde = kunde;
+	public void speichereKunden(Kunde kunde) throws SQLException, Exception {
+	    this.kunde = kunde;
+
+	    final String sql =
+	        "INSERT INTO Kunde (Haus_Hausnr, Vorname, Nachname, Telefon, email) " +
+	        "VALUES (?,?,?,?,?)";
+
+	    try (Connection con = DbConnector.getConnection();
+	         PreparedStatement ps = con.prepareStatement(sql)) {
+
+	        
+	        if (kunde.getHausnummer() > 0) {
+	            ps.setInt(1, kunde.getHausnummer());
+	        } else {
+	            ps.setNull(1, Types.INTEGER);
+	        }
+
+	        ps.setString(2, kunde.getVorname() == null ? "" : kunde.getVorname());
+
+	        String nn = (kunde.getNachname() == null || kunde.getNachname().isBlank())
+	                ? "" : kunde.getNachname();
+	        ps.setString(3, nn);
+
+	        if (kunde.getTelefonnummer() == null || kunde.getTelefonnummer().isBlank())
+	            ps.setNull(4, Types.VARCHAR);
+	        else
+	            ps.setString(4, kunde.getTelefonnummer());
+
+	        if (kunde.getEmail() == null || kunde.getEmail().isBlank())
+	            ps.setNull(5, Types.VARCHAR);
+	        else
+	            ps.setString(5, kunde.getEmail());
+
+	        ps.executeUpdate();
+	    }
 	}  
+	
+	public Kunde ladeLetztenKundenZuHaus(int hausnr) throws SQLException {
+	    final String sql =
+	        "SELECT Haus_Hausnr, Vorname, Nachname, Telefon, email " +
+	        "FROM Kunde WHERE Haus_Hausnr = ? " +
+	        "ORDER BY idKunde DESC LIMIT 1";
+
+	    try (Connection con = DbConnector.getConnection();
+	         PreparedStatement ps = con.prepareStatement(sql)) {
+	        ps.setInt(1, hausnr);
+	        try (ResultSet rs = ps.executeQuery()) {
+	            if (!rs.next()) return null;
+	            Kunde k = new Kunde();
+	            k.setHausnummer(rs.getInt("Haus_Hausnr"));
+	            k.setVorname(rs.getString("Vorname"));
+	            k.setNachname(rs.getString("Nachname"));
+	            k.setTelefonnummer(rs.getString("Telefon"));
+	            k.setEmail(rs.getString("email"));
+	            return k;
+	        }
+	    }
+	}
 }

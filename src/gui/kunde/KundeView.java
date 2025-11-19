@@ -44,8 +44,9 @@ public class KundeView{
     private Label lblEmail = new Label("E-Mail");
     private TextField txtEmail = new TextField();
 
-    private Label lblHausnummer = new Label("Hausnummer");
-    private TextField txtHausnummer = new TextField();
+    //!!! Hier: Label-Text geändert – Feld bleibt dasselbe, dient jetzt als Telefonnummer
+    private Label lblHausnummer = new Label("Telefonnummer");
+    private TextField txtTelefonnummer = new TextField();
 
 
     //-------Ende Attribute der grafischen Oberflaeche-------
@@ -95,7 +96,7 @@ public class KundeView{
         gridPane.add(txtEmail, 1, 5);
 
         gridPane.add(lblHausnummer, 0, 6);
-        gridPane.add(txtHausnummer, 1, 6);
+        gridPane.add(txtTelefonnummer, 1, 6);
 
         // Buttons
         gridPane.add(btnAnlegen, 0, 7);
@@ -134,7 +135,7 @@ public class KundeView{
     }
 
     private void leseKunden(){
-        // Wird aufgerufen, wenn im ComboBox eine Plannummer gewählt wird.
+        // Wird aufgerufen, wenn in der ComboBox eine Plannummer (Hausnummer) gewählt wird.
         Integer planNummer = cmbBxNummerHaus.getValue();
 
         if (planNummer == null) {
@@ -142,7 +143,7 @@ public class KundeView{
             txtVorname.clear();
             txtNachname.clear();
             txtEmail.clear();
-            txtHausnummer.clear();
+            txtTelefonnummer.clear(); // Telefonnummer-Feld leeren
             return;
         }
 
@@ -152,7 +153,7 @@ public class KundeView{
             txtVorname.clear();
             txtNachname.clear();
             txtEmail.clear();
-            txtHausnummer.clear();
+            txtTelefonnummer.clear();
             return;
         }
 
@@ -160,14 +161,14 @@ public class KundeView{
         txtVorname.setText(kunde.getVorname());
         txtNachname.setText(kunde.getNachname());
         txtEmail.setText(kunde.getEmail() == null ? "" : kunde.getEmail());
-        txtHausnummer.setText(String.valueOf(kunde.getHausnummer()));
+        txtTelefonnummer.setText(kunde.getTelefonnummer() == null ? "" : kunde.getTelefonnummer());
     }
 
     private void legeKundenAn(){
         // Objekt kunde fuellen
         Kunde kunde = new Kunde();
 
-        // ---- Plannummer prüfen ----
+        // ---- Plannummer prüfen (Hausnummer) ----
         Integer planNummer = cmbBxNummerHaus.getValue();
 
         if (planNummer == null) {
@@ -185,7 +186,6 @@ public class KundeView{
             zeigeFehlermeldung("Fehlender Vorname", "Der Vorname darf nicht leer sein.");
             return;
         }
-        // Prüfen, ob nur Buchstaben erlaubt sind
         if (!vorname.matches("[a-zA-ZäöüÄÖÜß\\- ]+")) {
             zeigeFehlermeldung("Ungültiger Vorname", "Der Vorname darf nur Buchstaben enthalten.");
             return;
@@ -197,7 +197,6 @@ public class KundeView{
             zeigeFehlermeldung("Fehlender Nachname", "Der Nachname darf nicht leer sein.");
             return;
         }
-        // Prüfen, ob nur Buchstaben erlaubt sind
         if (!nachname.matches("[a-zA-ZäöüÄÖÜß\\- ]+")) {
             zeigeFehlermeldung("Ungültiger Nachname", "Der Nachname darf nur Buchstaben enthalten.");
             return;
@@ -214,16 +213,10 @@ public class KundeView{
             return;
         }
 
-        // ---- Hausnummer prüfen (muss positive Zahl sein) ----
-        int hausnummer;
-        try {
-            hausnummer = Integer.parseInt(txtHausnummer.getText().trim());
-            if (hausnummer <= 0) {
-                zeigeFehlermeldung("Ungültige Hausnummer", "Die Hausnummer muss größer als 0 sein.");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            zeigeFehlermeldung("Ungültige Hausnummer", "Bitte geben Sie eine gültige Zahl ein.");
+        // ---- Telefonnummer prüfen  ----
+        String telefon = txtTelefonnummer.getText().trim();
+        if (telefon.isEmpty()) {
+            zeigeFehlermeldung("Fehlende Telefonnummer", "Bitte geben Sie eine Telefonnummer ein.");
             return;
         }
 
@@ -231,6 +224,7 @@ public class KundeView{
         kunde.setVorname(txtVorname.getText());
         kunde.setNachname(txtNachname.getText());
         kunde.setEmail(email);
+        kunde.setTelefonnummer(telefon);
         // In der Datenbank ist Haus_Hausnr der Schlüssel -> wir verwenden die Plannummer
         kunde.setHausnummer(planNummer);
 
@@ -241,14 +235,14 @@ public class KundeView{
         txtVorname.clear();
         txtNachname.clear();
         txtEmail.clear();
-        txtHausnummer.clear();
+        txtTelefonnummer.clear();
     }
 
     private void aendereKunden(){
         // Objekt kunde fuellen
         Kunde kunde = new Kunde();
 
-        // ---- Plannummer prüfen ----
+        // ---- Plannummer prüfen (Hausnummer) ----
         Integer planNummer = cmbBxNummerHaus.getValue();
 
         if (planNummer == null) {
@@ -266,7 +260,6 @@ public class KundeView{
             zeigeFehlermeldung("Fehlender Vorname", "Der Vorname darf nicht leer sein.");
             return;
         }
-        // Prüfen, ob nur Buchstaben erlaubt sind
         if (!vorname.matches("[a-zA-ZäöüÄÖÜß\\- ]+")) {
             zeigeFehlermeldung("Ungültiger Vorname", "Der Vorname darf nur Buchstaben enthalten.");
             return;
@@ -278,7 +271,6 @@ public class KundeView{
             zeigeFehlermeldung("Fehlender Nachname", "Der Nachname darf nicht leer sein.");
             return;
         }
-        // Prüfen, ob nur Buchstaben erlaubt sind
         if (!nachname.matches("[a-zA-ZäöüÄÖÜß\\- ]+")) {
             zeigeFehlermeldung("Ungültiger Nachname", "Der Nachname darf nur Buchstaben enthalten.");
             return;
@@ -295,15 +287,10 @@ public class KundeView{
             return;
         }
 
-        // Hausnummer-Feld prüfen (nur zur Validierung, nicht als DB-Schlüssel)
-        try {
-            int hausnummer = Integer.parseInt(txtHausnummer.getText().trim());
-            if (hausnummer <= 0) {
-                zeigeFehlermeldung("Ungültige Hausnummer", "Die Hausnummer muss größer als 0 sein.");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            zeigeFehlermeldung("Ungültige Hausnummer", "Bitte geben Sie eine gültige Zahl ein.");
+        // ---- Pflichtfeld Telefonnummer prüfen ----
+        String telefon = txtTelefonnummer.getText().trim();
+        if (telefon.isEmpty()) {
+            zeigeFehlermeldung("Fehlende Telefonnummer", "Bitte geben Sie eine Telefonnummer ein.");
             return;
         }
 
@@ -311,6 +298,7 @@ public class KundeView{
         kunde.setVorname(txtVorname.getText());
         kunde.setNachname(txtNachname.getText());
         kunde.setEmail(email);
+        kunde.setTelefonnummer(telefon);
         kunde.setHausnummer(planNummer);
 
         // Änderungen sofort in der Datenbank persistieren
@@ -339,7 +327,7 @@ public class KundeView{
             txtVorname.clear();
             txtNachname.clear();
             txtEmail.clear();
-            txtHausnummer.clear();
+            txtTelefonnummer.clear();
         }
     }
 

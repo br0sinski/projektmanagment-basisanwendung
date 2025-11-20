@@ -1,94 +1,91 @@
 package gui.grundriss;
 
-import business.grundriss.GrundrissModel;
 import business.grundriss.Sonderwunsch;
 import business.kunde.KundeModel;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.util.List;
 
 /**
- * Klasse, welche das Fenster mit den Sonderwuenschen zu den Grundriss-Varianten
- * kontrolliert.
+ * Control-Klasse für die Grundriss-Varianten
  */
-public final class GrundrissControl {
+public class GrundrissControl {
     
-    // das View-Objekt des Grundriss-Fensters
-    private GrundrissView grundrissView;
-    // Model für die Grundriss-Sonderwünsche (in-memory; später ersetzen durch DB)
     private GrundrissModel grundrissModel;
-    // Referenz auf KundeModel (später für kundenspezifisches Laden/Speichern verwenden)
     private KundeModel kundeModel;
-
+    private GrundrissView grundrissView;
+    
     /**
-     * erzeugt ein ControlObjekt inklusive View-Objekt und Model-Objekt zum 
-     * Fenster fuer die Sonderwuensche zum Grundriss.
-     * @param kundeModel KundeModel, Referenz auf aktuelles Kundenmodell
+     * Konstruktor für GrundrissControl ohne Parameter
      */
-    public GrundrissControl(KundeModel kundeModel){  
-        this.kundeModel = kundeModel;
-        this.grundrissModel = new GrundrissModel(); // später durch Laden aus DB ersetzen
-       	Stage stageGrundriss = new Stage();
-        stageGrundriss.initModality(Modality.APPLICATION_MODAL);
-        this.grundrissView = new GrundrissView(this, stageGrundriss);
+    public GrundrissControl() {
+        this.grundrissModel = new GrundrissModel();
     }
-        
+    
     /**
-     * macht das GrundrissView-Objekt sichtbar.
+     * Konstruktor für GrundrissControl mit KundeModel
+     * @param kundeModel das KundeModel
      */
-    public void oeffneGrundrissView(){ 
+    public GrundrissControl(KundeModel kundeModel) {
+        this.grundrissModel = new GrundrissModel();
+        this.kundeModel = kundeModel;
+    }
+    
+    /**
+     * Öffnet die Grundriss-View
+     */
+    public void oeffneGrundrissView() {
+        Stage grundrissStage = new Stage();
+        this.grundrissView = new GrundrissView(this, grundrissStage);
         this.grundrissView.oeffneGrundrissView();
     }
-
-    public void leseGrundrissSonderwuensche(){
-        // später: DB-Ladevorgang (SELECT auf Sonderwunsch + kundenspezifische Auswahl)
-    } 
     
-    public boolean pruefeKonstellationSonderwuensche(int[] ausgewaehlteSw){
-        // später: Validierungsregeln (Abhängigkeiten) einbauen
-        return true;
-    }
-
     /**
-     * gibt alle Sonderwünsche für das View heraus
-     * @return List<Sonderwunsch>, Liste der Sonderwünsche
+     * Liest die Grundriss-Sonderwünsche aus der Datenbank
+     */
+    public void leseGrundrissSonderwuensche() {
+        this.grundrissModel.leseGrundrissSonderwuensche();
+    }
+    
+    /**
+     * Gibt die Liste der Sonderwünsche zurück
+     * @return Liste der Sonderwünsche
      */
     public List<Sonderwunsch> getSonderwuensche() {
-        return grundrissModel.getSonderwuensche();
+        return this.grundrissModel.getSonderwuensche();
     }
-
+    
     /**
-     * prüft, ob ein Sonderwunsch (ID) aktuell ausgewählt ist
-     * @param id ID des Sonderwunsches
-     * @return boolean, true wenn ausgewählt
+     * Prüft, ob ein Sonderwunsch bereits ausgewählt ist
+     * @param sonderwunschId ID des Sonderwunsches
+     * @return true wenn ausgewählt, false sonst
      */
-    public boolean istSonderwunschAusgewaehlt(int id) {
-        return grundrissModel.istAusgewaehlt(id);
+    public boolean istSonderwunschAusgewaehlt(int sonderwunschId) {
+        return this.grundrissModel.istSonderwunschAusgewaehlt(sonderwunschId);
     }
-
+    
     /**
-     * speichert die Auswahl (aktuell nur in-memory; später Persistierung in DB)
-     * @param ids int[], ausgewählte Sonderwunsch-IDs
+     * Prüft die Konstellation der ausgewählten Sonderwünsche
+     * @param ausgewaehlteSw Array der ausgewählten Sonderwunsch-IDs
+     * @return true wenn Konstellation gültig, false sonst
      */
-    public void speichereSonderwuensche(int[] ids) {
-        grundrissModel.setAusgewaehlte(ids);
-        // später: INSERT/DELETE in Zuordnungstabelle Sonderwunsch_has_Haus
+    public boolean pruefeKonstellationSonderwuensche(int[] ausgewaehlteSw) {
+        return this.grundrissModel.pruefeKonstellationSonderwuensche(ausgewaehlteSw);
     }
-
+    
     /**
-     * berechnet den Gesamtpreis der aktuell ausgewählten Sonderwünsche
-     * @param ids int[], ausgewählte IDs
-     * @return int, Gesamtpreis in Euro
+     * Berechnet den Gesamtpreis der ausgewählten Sonderwünsche
+     * @param ausgewaehlteSw Array der ausgewählten Sonderwunsch-IDs
+     * @return Gesamtpreis
      */
-    public int berechneGesamtpreis(int[] ids) {
-        int sum = 0;
-        for (Sonderwunsch sw : grundrissModel.getSonderwuensche()) {
-            for (int id : ids) {
-                if (sw.getId() == id) {
-                    sum += sw.getPreis();
-                }
-            }
-        }
-        return sum;
+    public double berechnePreisSonderwuensche(int[] ausgewaehlteSw) {
+        return this.grundrissModel.berechnePreisSonderwuensche(ausgewaehlteSw);
+    }
+    
+    /**
+     * Speichert die ausgewählten Sonderwünsche in der Datenbank
+     * @param ausgewaehlteSw Array der ausgewählten Sonderwunsch-IDs
+     */
+    public void speichereSonderwuensche(int[] ausgewaehlteSw) {
+        this.grundrissModel.speichereSonderwuensche(ausgewaehlteSw);
     }
 }

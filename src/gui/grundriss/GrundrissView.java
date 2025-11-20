@@ -19,6 +19,8 @@ public class GrundrissView extends BasisView{
     //---Anfang Attribute der grafischen Oberflaeche---
     // Dynamische Liste für Checkboxen statt einzelner Attribute, um alle DB-Einträge abzubilden
     private List<CheckBox> checkBoxes = new ArrayList<>();
+    // Label für die Anzeige des Gesamtpreises
+    private Label lblGesamtpreis = new Label("0 Euro");
     //-------Ende Attribute der grafischen Oberflaeche-------
   
     /**
@@ -39,8 +41,13 @@ public class GrundrissView extends BasisView{
     /* initialisiert die Steuerelemente auf der Maske */
     protected void initKomponenten(){
         super.initKomponenten(); 
-           super.getLblSonderwunsch().setText("Grundriss-Varianten");
+        super.getLblSonderwunsch().setText("Grundriss-Varianten");
         // Komponenten werden dynamisch in leseGrundrissSonderwuensche hinzugefügt
+        
+        // Gesamtpreis-Label dem Grid hinzufügen
+        Label lblGesamtpreisText = new Label("Gesamtpreis:");
+        super.getGridPaneSonderwunsch().add(lblGesamtpreisText, 0, 0);
+        super.getGridPaneSonderwunsch().add(lblGesamtpreis, 1, 0);
     }  
     
     /**
@@ -76,6 +83,9 @@ public class GrundrissView extends BasisView{
                 chkBox.setSelected(true);
             }
             
+            // Event-Handler für Preisberechnung bei Änderung der Auswahl
+            chkBox.setOnAction(e -> berechneUndZeigePreisSonderwuensche());
+            
             checkBoxes.add(chkBox);
             
             super.getGridPaneSonderwunsch().add(lblBeschreibung, 0, row);
@@ -85,18 +95,36 @@ public class GrundrissView extends BasisView{
             
             row++;
         }
+        
+        // Initialen Preis berechnen und anzeigen
+        berechneUndZeigePreisSonderwuensche();
     }
     
-     /* berechnet den Preis der ausgesuchten Sonderwuensche und zeigt diesen an */
-      protected void berechneUndZeigePreisSonderwuensche(){
-          // Es wird erst die Methode pruefeKonstellationSonderwuensche(int[] ausgewaehlteSw)
-          // aus dem Control aufgerufen, dann der Preis berechnet.
-      }
+    /* berechnet den Preis der ausgesuchten Sonderwuensche und zeigt diesen an */
+    protected void berechneUndZeigePreisSonderwuensche(){
+        // IDs der ausgewählten Checkboxen sammeln
+        int[] selectedIds = checkBoxes.stream()
+            .filter(CheckBox::isSelected)
+            .mapToInt(cb -> (int) cb.getUserData())
+            .toArray();
+            
+        // Konstellation prüfen und Preis berechnen
+        boolean konstellationOk = this.grundrissControl.pruefeKonstellationSonderwuensche(selectedIds);
+        
+        if (konstellationOk) {
+            double gesamtpreis = this.grundrissControl.berechnePreisSonderwuensche(selectedIds);
+            lblGesamtpreis.setText(String.valueOf((int)gesamtpreis) + " Euro");
+            lblGesamtpreis.setStyle("-fx-text-fill: black;");
+        } else {
+            lblGesamtpreis.setText("Ungültige Kombination!");
+            lblGesamtpreis.setStyle("-fx-text-fill: red;");
+        }
+    }
       
-       /* speichert die ausgesuchten Sonderwuensche in der Datenbank ab */
-      protected void speichereSonderwuensche(){
-         // Es wird erst die Methode pruefeKonstellationSonderwuensche(int[] ausgewaehlteSw)
-          // aus dem Control aufgerufen, dann die Sonderwuensche gespeichert.
+    /* speichert die ausgesuchten Sonderwuensche in der Datenbank ab */
+    protected void speichereSonderwuensche(){
+        // Es wird erst die Methode pruefeKonstellationSonderwuensche(int[] ausgewaehlteSw)
+        // aus dem Control aufgerufen, dann die Sonderwuensche gespeichert.
         
         // IDs der ausgewählten Checkboxen sammeln
         int[] selectedIds = checkBoxes.stream()
@@ -105,5 +133,5 @@ public class GrundrissView extends BasisView{
             .toArray();
             
         this.grundrissControl.speichereSonderwuensche(selectedIds);
-      }
     }
+}

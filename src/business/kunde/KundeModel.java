@@ -54,6 +54,10 @@ public final class KundeModel {
 	public ObservableList<Integer> getPlannummern(){
 		return this.plannummern; 
 	}
+
+	public Kunde getKunde(){
+	    return this.kunde;
+	}
 		 	
 	// ---- Datenbankzugriffe -------------------
 	

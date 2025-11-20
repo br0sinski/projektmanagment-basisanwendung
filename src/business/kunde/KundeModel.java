@@ -63,9 +63,19 @@ public final class KundeModel {
 	 * @throws SQLException, Fehler beim Speichern in die Datenbank
 	 * @throws Exception, unbekannter Fehler
 	 */
+	
+	//geaddet: 
+	public boolean hatDachgeschoss(int hausnummer) {
+		return hausnummer % 2 == 0; 
+	}
 	public void speichereKunden(Kunde kunde)
 	    throws SQLException, Exception{
         // Speicherung des Kunden in der DB
    	    this.kunde = kunde;
+		System.out.println("Kunde gespeichert: " + kunde.getVorname() + " " + kunde.getNachname());
 	}  
+	
+	public Kunde getKunde() {
+		return kunde;
+	}
 }

@@ -7,7 +7,20 @@ public class Kunde {
 	private String nachname;
 	private String telefonnummer;
 	private String email;
-		  
+	private boolean dachgeschoss;//geändert
+	
+	
+	//geaddet: 
+	public Kunde() {}
+
+	public Kunde(int hausnummer, String vorname, String nachname, String telefonnummer, String email, boolean dachgeschoss) {
+		this.hausnummer = hausnummer;
+		this.vorname = vorname;
+		this.nachname = nachname;
+		this.telefonnummer = telefonnummer;
+		this.email = email;
+		this.dachgeschoss = dachgeschoss;
+	}
 	public int getHausnummer() {
 		return hausnummer;
 	}
@@ -46,6 +59,14 @@ public class Kunde {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+	
+	public boolean isDachgeschoss() {
+		return dachgeschoss;
+	}
+
+	public void setDachgeschoss(boolean dachgeschoss) {
+		this.dachgeschoss = dachgeschoss;
 	}
 	
 }
